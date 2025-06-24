@@ -2,41 +2,61 @@ pipeline {
     agent any
 
     environment {
-        REPO_URL = 'https://github.com/Grounder211/Test_Folders.git'
-        REPO_DIR = 'DroneRepo'
-        TARGET_DIR = 'C:/Users/ebalnee/OneDrive - Ericsson/Desktop/RepoDump'
+        IMAGE_NAME = "server-app"
+        GHCR_REPO = "ghcr.io/grounder211/${IMAGE_NAME}"
+        DOCKER_TAG = "${GHCR_REPO}:latest"
+        K8S_YAML = "deployment.yaml"
+        DEPLOY_NAMESPACE = "default"
     }
 
-    stage('Clone if Missing') {
-    steps {
-        bat """
-        if not exist "%REPO_DIR%\\.git" (
-            "C:\Users\ebalnee\AppData\Local\Programs\Python\Python313\Scripts\pip.exe" clone %REPO_URL% %REPO_DIR%
-        )
-        """
+    options {
+        disableConcurrentBuilds()
+        timestamps()
     }
-}
 
-        stage('Pull Latest Changes') {
+    stages {
+        stage('Checkout') {
             steps {
-                dir("${env.REPO_DIR}") {
-                    bat "git pull"
+                git url: 'https://github.com/Grounder211/Test_Folders.git', branch: 'main'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t $DOCKER_TAG .'
+            }
+        }
+
+        stage('Login to GHCR') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'ghcr-creds', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                    sh 'echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USER --password-stdin'
                 }
             }
         }
 
-        stage('Copy New/Changed Files Only') {
+        stage('Push to GHCR') {
             steps {
-                bat """
-                xcopy "%REPO_DIR%\\*" "%TARGET_DIR%\\" /D /E /Y /I
-                """
+                sh 'docker push $DOCKER_TAG'
             }
         }
 
-        stage('Done') {
+        stage('Deploy to Kubernetes') {
             steps {
-                echo "Incremental sync complete — new/changed files copied to ${env.TARGET_DIR}"
+                sh """
+                kubectl apply -f $K8S_YAML --namespace=$DEPLOY_NAMESPACE
+                kubectl rollout status deployment/server-deployment --namespace=$DEPLOY_NAMESPACE
+                """
             }
+        }
+    }
+
+    post {
+        success {
+            echo "✅ Deployment successful!"
+        }
+        failure {
+            echo "❌ Deployment failed!"
         }
     }
 }
