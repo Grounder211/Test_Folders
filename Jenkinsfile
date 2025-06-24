@@ -7,18 +7,15 @@ pipeline {
         TARGET_DIR = 'C:/Users/ebalnee/OneDrive - Ericsson/Desktop/RepoDump'
     }
 
-    stages {
-        stage('Clone if Missing') {
-            steps {
-                script {
-                    bat """
-                    if not exist "%REPO_DIR%\\.git" (
-                        git clone %REPO_URL% %REPO_DIR%
-                    )
-                    """
-                }
-            }
-        }
+    stage('Clone if Missing') {
+    steps {
+        bat """
+        if not exist "%REPO_DIR%\\.git" (
+            "C:\Users\ebalnee\AppData\Local\Programs\Python\Python313\Scripts\pip.exe" clone %REPO_URL% %REPO_DIR%
+        )
+        """
+    }
+}
 
         stage('Pull Latest Changes') {
             steps {
