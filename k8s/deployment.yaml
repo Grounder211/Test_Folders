@@ -16,17 +16,17 @@ spec:
     spec:
       containers:
         - name: zip-server
-          image: neeraj010702/zip-server:latest  # Change to your actual Docker Hub image
+          image: neeraj010702/zip-server:latest  # Your Docker Hub image
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
           volumeMounts:
-            - name: zip-storage
-              mountPath: /data  # This is where the server reads files from inside the container
+            - name: zip-volume
+              mountPath: /data  # This is where server looks for zip files
       volumes:
-        - name: zip-storage
+        - name: zip-volume
           hostPath:
-            path: /c/Users/Public/Downloads/DATA_Files  # Path format for Docker on Windows
+            path: /c/Users/Public/Downloads/DATA_Files
             type: DirectoryOrCreate
 ---
 apiVersion: v1
@@ -36,8 +36,9 @@ metadata:
 spec:
   selector:
     app: zip-server
+  type: NodePort
   ports:
     - protocol: TCP
       port: 80
       targetPort: 5000
-  type: NodePort
+      nodePort: 30080  # Fixed external access port
