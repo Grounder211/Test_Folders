@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = 'neeraj010702/zip-server:latest'
+        WORK_DIR = 'C:/Users/Public/Downloads/Server'
+        KUBECONFIG = 'C:/Users/ebalnee/.kube/config'
+    }
+
+    stages {
+        stage('Prepare Directory') {
+            steps {
+                bat """
+                if not exist "${WORK_DIR}" mkdir "${WORK_DIR}"
+                xcopy /Y /E /I . "${WORK_DIR}"
+                """
+            }
+        }
+
+        stage('Docker Build & Push') {
+            steps {
+                dir("${WORK_DIR}") {
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        bat """
+                        docker build -t ${IMAGE_NAME} .
+                        echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
+                        docker push ${IMAGE_NAME}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                script {
+                    try {
+                        bat """
+                        kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment-1.yaml --validate=false
+                        """
+                    } catch (err) {
+                        error "Kubernetes deployment failed: ${err}"
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                bat """
+                kubectl --kubeconfig=${KUBECONFIG} rollout status deployment/zip-server
+                """
+            }
+        }
+    }
+}
