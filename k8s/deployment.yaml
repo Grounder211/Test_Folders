@@ -13,30 +13,21 @@ spec:
         app: zip-server
     spec:
       containers:
-      - name: zip-server
-        image: neeraj010702/zip-server:latest
-        ports:
-        - containerPort: 5000
-        env:
-        - name: ZIP_DIR
-          value: "C:/Users/Public/Downloads/DATA_Files"
-        volumeMounts:
-        - name: zip-volume
-          mountPath: "C:/Users/Public/Downloads/DATA_Files"
+        - name: zip-server
+          image: neeraj010702/zip-server:latest
+          ports:
+            - containerPort: 5000
+          env:
+            - name: ZIP_DIR
+              value: "/app/data"  # Use Linux path inside container
+          volumeMounts:
+            - name: zip-volume
+              mountPath: /app/data   # Mount path inside the container
       volumes:
         - name: zip-volume
           hostPath:
-            path: /data/DATA_Files    # Path inside Minikube container (mount target)
+            path: /data/DATA_Files   # Path inside Minikube VM (from minikube mount)
             type: Directory
-
-      containers:
-        - name: zip-server
-          image: neeraj010702/zip-server:latest
-          volumeMounts:
-            - name: zip-volume
-              mountPath: /app/data   # Path inside your container where data is accessible
-
-
 ---
 apiVersion: v1
 kind: Service
@@ -46,7 +37,7 @@ spec:
   selector:
     app: zip-server
   ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 5000
+    - protocol: TCP
+      port: 80          # External port (NodePort)
+      targetPort: 5000  # Container's port
   type: NodePort
