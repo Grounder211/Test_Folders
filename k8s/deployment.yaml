@@ -29,7 +29,7 @@ spec:
       volumes:
         - name: zip-volume
           hostPath:
-            path: C:/Users/Public/Downloads/DATA_Files  # Windows path translated for Docker/K8s
+            path: /mnt/data  # Windows path translated for Docker/K8s
             type: DirectoryOrCreate
 
 ---

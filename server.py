@@ -2,7 +2,8 @@ from flask import Flask, request, send_from_directory, jsonify
 import os
 
 app = Flask(__name__)
-ZIP_DIR = os.environ.get("ZIP_DIR", "/data/zips")
+# Explicit ZIP file directory
+ZIP_DIR = os.environ.get("ZIP_DIR", "/data")
 
 @app.route('/download', methods=['GET'])
 def download_zip():
