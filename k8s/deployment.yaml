@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zip-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zip-server
+  template:
+    metadata:
+      labels:
+        app: zip-server
+    spec:
+      containers:
+      - name: zip-server
+        image: neeraj010702/zip-server:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: ZIP_DIR
+          value: "C:/Users/Public/Downloads/DATA_Files"
+        volumeMounts:
+        - name: zip-volume
+          mountPath: "C:/Users/Public/Downloads/DATA_Files"
+      volumes:
+      - name: zip-volume
+        hostPath:
+          path: "C:/Users/Public/Downloads/DATA_Files"
+          type: Directory
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zip-server
+spec:
+  selector:
+    app: zip-server
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: NodePort
