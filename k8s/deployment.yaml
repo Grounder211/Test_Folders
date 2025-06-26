@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: zip-server
+  labels:
+    app: zip-server
 spec:
   replicas: 1
   selector:
@@ -14,30 +16,28 @@ spec:
     spec:
       containers:
         - name: zip-server
-          image: neeraj010702/zip-server:latest
+          image: neeraj010702/zip-server:latest  # Change to your actual Docker Hub image
+          imagePullPolicy: Always
           ports:
             - containerPort: 5000
-          env:
-            - name: ZIP_DIR
-              value: "/app/data"  # Use Linux path inside container
           volumeMounts:
-            - name: zip-volume
-              mountPath: /app/data   # Mount path inside the container
+            - name: zip-storage
+              mountPath: /data  # This is where the server reads files from inside the container
       volumes:
-        - name: zip-volume
+        - name: zip-storage
           hostPath:
-            path: /data/DATA_Files   # Path inside Minikube VM (from minikube mount)
-            type: Directory
+            path: /c/Users/Public/Downloads/DATA_Files  # Path format for Docker on Windows
+            type: DirectoryOrCreate
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: zip-server
+  name: zip-server-service
 spec:
   selector:
     app: zip-server
   ports:
     - protocol: TCP
-      port: 80          # External port (NodePort)
-      targetPort: 5000  # Container's port
+      port: 80
+      targetPort: 5000
   type: NodePort
