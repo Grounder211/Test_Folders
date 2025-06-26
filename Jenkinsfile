@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME = 'neeraj010702/zip-server:latest'
         WORK_DIR = 'C:/Users/Public/Downloads/Server'
-        KUBECONFIG='C:\Users\ebalnee\.kube\config'
+        KUBECONFIG='C:/Users/ebalnee/.kube/config'
 
     }
 
