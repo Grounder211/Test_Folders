@@ -1,0 +1,49 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zip-server
+  labels:
+    app: zip-server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: zip-server
+  template:
+    metadata:
+      labels:
+        app: zip-server
+    spec:
+      containers:
+        - name: zip-server
+          image: neeraj010702/zip-server:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80  # NGINX serves on 80
+          env:
+            - name: ZIP_DIR
+              value: "/data"
+          volumeMounts:
+            - name: zip-volume
+              mountPath: /data
+      volumes:
+        - name: zip-volume
+          hostPath:
+            path: /mnt/data
+            type: DirectoryOrCreate
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: zip-server-service
+spec:
+  selector:
+    app: zip-server
+  type: LoadBalancer   # For production / external access
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80    # nginx inside container

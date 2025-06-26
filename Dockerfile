@@ -1,8 +1,19 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
+
 WORKDIR /app
-COPY server.py requirements.txt ./
-RUN pip install -r requirements.txt
-RUN mkdir /app/data
-ENV ZIP_DIR=/app/data
-EXPOSE 5000
-CMD ["python", "server.py"]
+
+COPY server /app/server
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY requirements.txt .
+
+RUN pip install --no-cache-dir -r requirements.txt \
+    && apt-get update \
+    && apt-get install -y nginx \
+    && rm -rf /var/lib/apt/lists/*
+
+# Gunicorn + NGINX entry
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+EXPOSE 80
+CMD ["/start.sh"]
