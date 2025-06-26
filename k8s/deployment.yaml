@@ -24,10 +24,18 @@ spec:
         - name: zip-volume
           mountPath: "C:/Users/Public/Downloads/DATA_Files"
       volumes:
-      - name: zip-volume
-        hostPath:
-          path: "C:/Users/Public/Downloads/DATA_Files"
-          type: Directory
+        - name: zip-volume
+          hostPath:
+            path: /data/DATA_Files    # Path inside Minikube container (mount target)
+            type: Directory
+
+      containers:
+        - name: zip-server
+          image: neeraj010702/zip-server:latest
+          volumeMounts:
+            - name: zip-volume
+              mountPath: /app/data   # Path inside your container where data is accessible
+
 
 ---
 apiVersion: v1
