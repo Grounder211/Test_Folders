@@ -20,14 +20,18 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 5000
+          env:
+            - name: ZIP_DIR
+              value: "/data"                # Tell server to look here for files
           volumeMounts:
             - name: zip-volume
-              mountPath: /data  # This is where server looks for zip files
+              mountPath: /data              # Mount point inside container
       volumes:
         - name: zip-volume
           hostPath:
-            path: /c/Users/Public/Downloads/DATA_Files
+            path: /c/Users/Public/Downloads/DATA_Files  # Windows path translated for Docker/K8s
             type: DirectoryOrCreate
+
 ---
 apiVersion: v1
 kind: Service
@@ -41,4 +45,4 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5000
-      nodePort: 30080  # Fixed external access port
+      nodePort: 30080   # External port to access your server
