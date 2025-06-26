@@ -34,6 +34,8 @@ pipeline {
 
         stage('K8s Deploy') {
             steps {
+                bat "kubectl get nodes"
+
                 bat "kubectl apply -f k8s/deployment.yaml"
             }
         }
