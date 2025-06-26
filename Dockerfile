@@ -1,17 +1,8 @@
-FROM python:3.11-slim
-
-# Set working directory inside the container
-WORKDIR /server
-
-# Copy server script into the container
-COPY server.py .
-
-# Install Flask
-RUN pip install flask
-
-# Environment variable to match host path
-ENV ZIP_DIR="C:/Users/Public/Downloads/DATA_Files"
-
+FROM python:3.10-slim
+WORKDIR /app
+COPY server.py requirements.txt ./
+RUN pip install -r requirements.txt
+RUN mkdir /app/data
+ENV ZIP_DIR=/app/data
 EXPOSE 5000
-
 CMD ["python", "server.py"]
