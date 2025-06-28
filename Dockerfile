@@ -1,18 +1,21 @@
-FROM python:3.11-slim
+# Use an official Python base image
+FROM python:3.10-slim
 
+# Set working directory
 WORKDIR /app
 
-COPY server.py /app/
-COPY requirements.txt /app/
+# Copy only the necessary files
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt \
-    && apt-get update \
-    && apt-get install -y nginx \
-    && rm -rf /var/lib/apt/lists/*
+# Copy your app code
+COPY . .
 
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# Expose port Flask runs on
+EXPOSE 5000
 
-EXPOSE 80
+# Environment variable (optional default)
+ENV ZIP_DIR=/data
 
-CMD ["/start.sh"]
+# Command to run your server directly
+CMD ["python", "app.py"]
