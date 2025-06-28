@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Start Gunicorn in background
-gunicorn --chdir server --bind 127.0.0.1:5000 wsgi:app &
+# Start Gunicorn to serve Flask app
+gunicorn --bind 0.0.0.0:5000 server:app &
 
-# Start NGINX in foreground
+# Start nginx in foreground
 nginx -g "daemon off;"
