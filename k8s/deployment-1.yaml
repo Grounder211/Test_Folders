@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,7 +19,7 @@ spec:
           image: neeraj010702/zip-server:latest
           imagePullPolicy: Always
           ports:
-            - containerPort: 80  # NGINX serves on 80
+            - containerPort: 5000
           env:
             - name: ZIP_DIR
               value: "/data"
@@ -32,18 +31,3 @@ spec:
           hostPath:
             path: /mnt/data
             type: DirectoryOrCreate
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: zip-server-service
-spec:
-  selector:
-    app: zip-server
-  type: LoadBalancer   # For production / external access
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 5000    # nginx inside container

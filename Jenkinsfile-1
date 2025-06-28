@@ -36,14 +36,18 @@ pipeline {
                 script {
                     try {
                         bat """
-                        kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment-1.yaml --validate=false
-                        """
-                    } catch (err) {
-                        error "Kubernetes deployment failed: ${err}"
-                    }
-                }
+                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/tls-secret.yaml --validate=false
+                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment-1.yaml --validate=false
+                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/service.yaml --validate=false
+                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/ingress.yaml --validate=false
+                """
+            } catch (err) {
+                error "Kubernetes deployment failed: ${err}"
             }
         }
+        }
+        }
+
 
         stage('Verify Deployment') {
             steps {
