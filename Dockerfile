@@ -1,14 +1,16 @@
-FROM alpine:latest
+FROM python:3.10-alpine
 
-# Install minimal web server (BusyBox's httpd)
-RUN apk add --no-cache busybox
+# Install Flask
+RUN pip install flask
 
-# Create working dir
-RUN mkdir -p /data
+# Create working directory
+WORKDIR /app
 
-# Add shell script to start the server
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
+# Copy app.py
+COPY app.py .
 
-# Run busybox http server
-CMD ["/start.sh"]
+# Expose port
+EXPOSE 5000
+
+# Run the Flask app
+CMD ["python", "app.py"]

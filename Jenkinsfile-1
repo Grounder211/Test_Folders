@@ -2,32 +2,34 @@ pipeline {
   agent any
 
   environment {
-        KUBECONFIG = 'C:/Users/ebalnee/.kube/config'
-    }
+    KUBECONFIG = 'C:/Users/ebalnee/.kube/config'
+  }
+
   stages {
     stage('Build Docker Image') {
       steps {
         bat 'docker build -t neeraj010702/zip-server:latest .'
       }
     }
+
     stage('Push Docker Image') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-    bat """
-    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-    """
-}
-
+          bat """
+          echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+          docker push neeraj010702/zip-server:latest
+          """
+        }
       }
     }
+
     stage('Deploy to Kubernetes') {
       steps {
         bat '''
           minikube kubectl -- apply -f k8s/tls-secret.yaml
-minikube kubectl -- apply -f k8s/deployment-1.yaml
-minikube kubectl -- apply -f k8s/service.yaml
-minikube kubectl -- apply -f k8s/ingress.yaml
-
+          minikube kubectl -- apply -f k8s/deployment-1.yaml
+          minikube kubectl -- apply -f k8s/service.yaml
+          minikube kubectl -- apply -f k8s/ingress.yaml
         '''
       }
     }
