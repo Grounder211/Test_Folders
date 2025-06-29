@@ -1,10 +1,14 @@
-FROM python:3.10-slim
+FROM alpine:latest
 
-WORKDIR /app
+# Install minimal web server (BusyBox's httpd)
+RUN apk add --no-cache busybox
 
-COPY app.py requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+# Create working dir
+RUN mkdir -p /data
 
-EXPOSE 5000
+# Add shell script to start the server
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-CMD ["python", "app.py"]
+# Run busybox http server
+CMD ["/start.sh"]

@@ -1,60 +1,30 @@
 pipeline {
-    agent any
-
-    environment {
-        IMAGE_NAME = 'neeraj010702/zip-server:latest'
-        WORK_DIR = 'C:/Users/Public/Downloads/Server'
-        KUBECONFIG = 'C:/Users/ebalnee/.kube/config'
+  agent any
+  stages {
+    stage('Build Docker Image') {
+      steps {
+        sh 'docker build -t neeraj010702/zip-server:latest .'
+      }
     }
-
-    stages {
-        stage('Prepare Directory') {
-            steps {
-                bat """
-                if not exist "${WORK_DIR}" mkdir "${WORK_DIR}"
-                xcopy /Y /E /I . "${WORK_DIR}"
-                """
-            }
+    stage('Push Docker Image') {
+      steps {
+        withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
+          sh '''
+            echo "$DOCKER_TOKEN" | docker login -u neeraj010702 --password-stdin
+            docker push neeraj010702/zip-server:latest
+          '''
         }
-
-        stage('Docker Build & Push') {
-            steps {
-                dir("${WORK_DIR}") {
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        bat """
-                        docker build -t ${IMAGE_NAME} .
-                        echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin
-                        docker push ${IMAGE_NAME}
-                        """
-                    }
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                script {
-                    try {
-                        bat """
-                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/tls-secret.yaml --validate=false
-                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/deployment-1.yaml --validate=false
-                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/service.yaml --validate=false
-                kubectl --kubeconfig=${KUBECONFIG} apply -f k8s/ingress.yaml --validate=false
-                """
-            } catch (err) {
-                error "Kubernetes deployment failed: ${err}"
-            }
-        }
-        }
-        }
-
-
-        stage('Verify Deployment') {
-            steps {
-                bat """
-                kubectl --kubeconfig=${KUBECONFIG} rollout status deployment/zip-server
-                """
-            }
-        }
+      }
     }
+    stage('Deploy to Kubernetes') {
+      steps {
+        sh '''
+          kubectl apply -f k8s/tls-secret.yaml --validate=false || true
+          kubectl apply -f k8s/deployment-1.yaml --validate=false
+          kubectl apply -f k8s/service.yaml --validate=false
+          kubectl apply -f k8s/ingress.yaml --validate=false
+        '''
+      }
+    }
+  }
 }

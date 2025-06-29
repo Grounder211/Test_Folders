@@ -7,10 +7,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - zipserver.local  # <-- change to your actual domain or use ngrok later
+        - yourdomain.com
       secretName: tls-secret
   rules:
-    - host: zipserver.local
+    - host: yourdomain.com
       http:
         paths:
           - path: /
