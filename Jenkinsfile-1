@@ -1,5 +1,9 @@
 pipeline {
   agent any
+
+  environment {
+        KUBECONFIG = 'C:/Users/ebalnee/.kube/config'
+    }
   stages {
     stage('Build Docker Image') {
       steps {
