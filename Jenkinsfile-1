@@ -3,13 +3,13 @@ pipeline {
   stages {
     stage('Build Docker Image') {
       steps {
-        sh 'docker build -t neeraj010702/zip-server:latest .'
+        bat 'docker build -t neeraj010702/zip-server:latest .'
       }
     }
     stage('Push Docker Image') {
       steps {
         withCredentials([string(credentialsId: 'docker-hub-token', variable: 'DOCKER_TOKEN')]) {
-          sh '''
+          bat '''
             echo "$DOCKER_TOKEN" | docker login -u neeraj010702 --password-stdin
             docker push neeraj010702/zip-server:latest
           '''
@@ -18,7 +18,7 @@ pipeline {
     }
     stage('Deploy to Kubernetes') {
       steps {
-        sh '''
+        bat '''
           kubectl apply -f k8s/tls-secret.yaml --validate=false || true
           kubectl apply -f k8s/deployment-1.yaml --validate=false
           kubectl apply -f k8s/service.yaml --validate=false
