@@ -8,12 +8,12 @@ pipeline {
     }
     stage('Push Docker Image') {
       steps {
-        withCredentials([string(credentialsId: 'dockerhub-creds', variable: 'DOCKER_TOKEN')]) {
-          bat '''
-            echo "$DOCKER_TOKEN" | docker login -u neeraj010702 --password-stdin
-            docker push neeraj010702/zip-server:latest
-          '''
-        }
+        withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+    bat """
+    echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+    """
+}
+
       }
     }
     stage('Deploy to Kubernetes') {
