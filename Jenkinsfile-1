@@ -19,10 +19,11 @@ pipeline {
     stage('Deploy to Kubernetes') {
       steps {
         bat '''
-          minikube kubectl --apply -f k8s/tls-secret.yaml 
-                    minikube kubectl --apply -f k8s/deployment-1.yaml 
-                   minikube kubectl --apply -f k8s/service.yaml 
-                   minikube kubectl --apply -f k8s/ingress.yaml 
+          minikube kubectl -- apply -f k8s/tls-secret.yaml
+minikube kubectl -- apply -f k8s/deployment-1.yaml
+minikube kubectl -- apply -f k8s/service.yaml
+minikube kubectl -- apply -f k8s/ingress.yaml
+
         '''
       }
     }
