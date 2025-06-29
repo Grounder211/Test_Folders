@@ -7,10 +7,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - zipserver.example.com   # Your DNS name here, or IP for testing
-      secretName: zip-server-tls
+        - zipserver.local  # <-- change to your actual domain or use ngrok later
+      secretName: tls-secret
   rules:
-    - host: zipserver.example.com
+    - host: zipserver.local
       http:
         paths:
           - path: /

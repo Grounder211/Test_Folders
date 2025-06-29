@@ -2,10 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: zip-server
-  labels:
-    app: zip-server
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: zip-server
@@ -17,15 +15,14 @@ spec:
       containers:
         - name: zip-server
           image: neeraj010702/zip-server:latest
-          imagePullPolicy: Always
           ports:
             - containerPort: 5000
           env:
             - name: ZIP_DIR
               value: "/data"
           volumeMounts:
-            - name: zip-volume
-              mountPath: /data
+            - mountPath: /data
+              name: zip-volume
       volumes:
         - name: zip-volume
           hostPath:
