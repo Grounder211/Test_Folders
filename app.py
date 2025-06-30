@@ -1,22 +1,28 @@
-from flask import Flask, send_from_directory, abort
-import os, datetime
+from flask import Flask, request, send_from_directory, jsonify
+import os
 
 app = Flask(__name__)
-FILE_DIR = "/data/files"
-LOG_FILE = "/data/logs/missing_requests.log"
 
-os.makedirs(FILE_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(LOG_FILE), exist_ok=True)
+DATA_DIR = "/data/files"
 
-@app.route("/file/<filename>")
-def serve_file(filename):
-    path = os.path.join(FILE_DIR, filename)
-    if os.path.exists(path):
-        return send_from_directory(FILE_DIR, filename, as_attachment=True)
+@app.route('/')
+def index():
+    return "File Server is Running"
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    f = request.files['file']
+    save_path = os.path.join(DATA_DIR, f.filename)
+    f.save(save_path)
+    return jsonify({"message": "File uploaded successfully."})
+
+@app.route('/download/<filename>', methods=['GET'])
+def download(filename):
+    file_path = os.path.join(DATA_DIR, filename)
+    if os.path.exists(file_path):
+        return send_from_directory(DATA_DIR, filename, as_attachment=True)
     else:
-        with open(LOG_FILE, "a") as f:
-            f.write(f"{datetime.datetime.now().isoformat()} - MISSING: {filename}\n")
-        abort(404)
+        return jsonify({"error": "File not found"}), 404
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

@@ -1,60 +1,27 @@
 pipeline {
-  agent any
-  environment {
-    IMAGE_NAME = "file-server:latest"
-  }
+    agent any
 
-  stages {
-    stage('Build Docker Image') {
-      steps {
-        bat 'docker build -t %IMAGE_NAME% .'
-      }
-    }
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build('neeraj010702/zip-server:latest')
+                }
+            }
+        }
 
-    stage('Start Minikube') {
-      steps {
-        bat 'minikube start --driver=docker'
-      }
-    }
+        stage('Load Image into Minikube') {
+            steps {
+                bat 'minikube image load neeraj010702/zip-server:latest'
+            }
+        }
 
-    stage('Load Image into Minikube') {
-      steps {
-        bat 'minikube image load %IMAGE_NAME%'
-      }
+        stage('Deploy to Kubernetes') {
+            steps {
+                bat 'kubectl apply -f manifests/deployment-1.yaml'
+                bat 'kubectl apply -f manifests/service.yaml'
+                bat 'kubectl rollout restart deployment file-server'
+            }
+        }
     }
-
-    stage('Install MetalLB') {
-      steps {
-        bat '''
-        kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.10/config/manifests/metallb-native.yaml
-        kubectl apply -f manifests\\metallb-config.yaml
-        '''
-      }
-    }
-
-    stage('Init HostPath') {
-      steps {
-        bat '''
-        kubectl apply -f manifests\\init-ds.yaml
-        timeout /t 10
-        kubectl delete ds host-init -n kube-system
-        '''
-      }
-    }
-
-    stage('Deploy App') {
-      steps {
-        bat '''
-        kubectl apply -f manifests\\deployment.yaml
-        kubectl apply -f manifests\\service.yaml
-        '''
-      }
-    }
-
-    stage('Show Access IP') {
-      steps {
-        bat 'kubectl get svc file-server'
-      }
-    }
-  }
 }

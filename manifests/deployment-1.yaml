@@ -14,14 +14,14 @@ spec:
     spec:
       containers:
       - name: file-server
-        image: file-server:latest
+        image: neeraj010702/zip-server:latest
         ports:
         - containerPort: 5000
         volumeMounts:
-        - name: file-volume
-          mountPath: /data
+        - name: data-volume
+          mountPath: /data/files
       volumes:
-      - name: file-volume
+      - name: data-volume
         hostPath:
-          path: /mnt/data
-          type: DirectoryOrCreate
+          path: /mnt/c/Users/Public/Downloads/DATA_Files
+          type: Directory

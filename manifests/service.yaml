@@ -3,9 +3,11 @@ kind: Service
 metadata:
   name: file-server
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: file-server
   ports:
-    - port: 80
-      targetPort: 5000
+    - protocol: TCP
+      port: 80          # Service port exposed internally in cluster
+      targetPort: 5000  # Container port
+      nodePort: 30080   # External port on the node to expose
