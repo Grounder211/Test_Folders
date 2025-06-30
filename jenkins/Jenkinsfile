@@ -1,0 +1,60 @@
+pipeline {
+  agent any
+  environment {
+    IMAGE_NAME = "file-server:latest"
+  }
+
+  stages {
+    stage('Build Docker Image') {
+      steps {
+        bat 'docker build -t %IMAGE_NAME% .'
+      }
+    }
+
+    stage('Start Minikube') {
+      steps {
+        bat 'minikube start --driver=docker'
+      }
+    }
+
+    stage('Load Image into Minikube') {
+      steps {
+        bat 'minikube image load %IMAGE_NAME%'
+      }
+    }
+
+    stage('Install MetalLB') {
+      steps {
+        bat '''
+        kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.10/config/manifests/metallb-native.yaml
+        kubectl apply -f manifests\\metallb-config.yaml
+        '''
+      }
+    }
+
+    stage('Init HostPath') {
+      steps {
+        bat '''
+        kubectl apply -f manifests\\init-ds.yaml
+        timeout /t 10
+        kubectl delete ds host-init -n kube-system
+        '''
+      }
+    }
+
+    stage('Deploy App') {
+      steps {
+        bat '''
+        kubectl apply -f manifests\\deployment.yaml
+        kubectl apply -f manifests\\service.yaml
+        '''
+      }
+    }
+
+    stage('Show Access IP') {
+      steps {
+        bat 'kubectl get svc file-server'
+      }
+    }
+  }
+}

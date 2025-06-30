@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: file-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: file-server
+  template:
+    metadata:
+      labels:
+        app: file-server
+    spec:
+      containers:
+      - name: file-server
+        image: file-server:latest
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: file-volume
+          mountPath: /data
+      volumes:
+      - name: file-volume
+        hostPath:
+          path: /mnt/data
+          type: DirectoryOrCreate
